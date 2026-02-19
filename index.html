@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Pastelería Guzmán - Pasteles y gelatinas artesanales hechos con amor">
+    <title>Pastelería Guzmán - Deliciosos Pasteles y Gelatinas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+</head>
+<body>
+    <!-- Modal de Registro -->
+    <div id="registerModal" class="modal" aria-hidden="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Registro de Cliente</h2>
+                <button class="close-modal" onclick="closeRegister()" aria-label="Cerrar modal">×</button>
+            </div>
+            <form id="registerForm" onsubmit="return confirmRegister(event)">
+                <div class="form-group">
+                    <label for="clientName">Nombre completo *</label>
+                    <input type="text" id="clientName" placeholder="Ej: Juan Pérez" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientPhone">Teléfono *</label>
+                    <input type="tel" id="clientPhone" placeholder="Ej: 5512345678" pattern="[0-9]{10}" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">Correo electrónico *</label>
+                    <input type="email" id="clientEmail" placeholder="ejemplo@correo.com" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary">Continuar con el pago</button>
+                    <button type="button" class="btn-secondary" onclick="closeRegister()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Método de Pago -->
+<div id="paymentModal" class="modal" aria-hidden="true" aria-labelledby="paymentModalTitle">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="paymentModalTitle">Seleccionar Método de Pago</h2>
+            <button class="close-modal" onclick="closePaymentModal()" aria-label="Cerrar modal">×</button>
+        </div>
+        <div class="payment-options">
+            <div class="payment-method" onclick="selectPaymentMethod('transferencia')">
+                <div class="payment-icon">🏦</div>
+                <div class="payment-info">
+                    <h3>Transferencia Bancaria</h3>
+                    <p>Paga mediante depósito o transferencia</p>
+                </div>
+                <div class="payment-radio">
+                    <input type="radio" name="paymentMethod" value="transferencia">
+                </div>
+            </div>
+            
+            <div class="payment-method" onclick="selectPaymentMethod('tarjeta')">
+                <div class="payment-icon">💳</div>
+                <div class="payment-info">
+                    <h3>Tarjeta Bancaria</h3>
+                    <p>Paga con tarjeta de crédito o débito</p>
+                </div>
+                <div class="payment-radio">
+                    <input type="radio" name="paymentMethod" value="tarjeta">
+                </div>
+            </div>
+            
+            <div class="payment-method" onclick="selectPaymentMethod('efectivo')">
+                <div class="payment-icon">💰</div>
+                <div class="payment-info">
+                    <h3>Efectivo</h3>
+                    <p>Paga al recoger tu pedido</p>
+                </div>
+                <div class="payment-radio">
+                    <input type="radio" name="paymentMethod" value="efectivo">
+                </div>
+            </div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="button" class="btn-primary" onclick="continueToShipping()">Continuar con Envío</button>
+            <button type="button" class="btn-secondary" onclick="closePaymentModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Información de Tarjeta -->
+<div id="cardModal" class="modal" aria-hidden="true" aria-labelledby="cardModalTitle">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="cardModalTitle">Información de Tarjeta</h2>
+            <button class="close-modal" onclick="closeCardModal()" aria-label="Cerrar modal">×</button>
+        </div>
+
+        <form id="cardForm" onsubmit="return processCardPayment(event)">
+            
+            <div class="form-group">
+                <label for="cardNumber">Número de Tarjeta *</label>
+                <input
+                    type="text"
+                    id="cardNumber"
+                    placeholder="1234 5678 9012 3456"
+                    inputmode="numeric"
+                    maxlength="19"
+                    pattern="[0-9 ]{19}"
+                    required
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="cardExpiry">Fecha de Expiración *</label>
+                    <input
+                        type="text"
+                        id="cardExpiry"
+                        placeholder="MM/AA"
+                        pattern="(0[1-9]|1[0-2])\/[0-9]{2}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="cardCVC">CVC *</label>
+                    <input
+                        type="text"
+                        id="cardCVC"
+                        placeholder="123"
+                        pattern="[0-9]{3,4}"
+                        maxlength="4"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="cardName">Nombre en la Tarjeta *</label>
+                <input
+                    type="text"
+                    id="cardName"
+                    placeholder="JUAN PEREZ"
+                    required
+                >
+            </div>
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn-primary">Procesar Pago</button>
+                <button type="button" class="btn-secondary" onclick="closeCardModal()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Información de Transferencia -->
+<div id="transferModal" class="modal" aria-hidden="true" aria-labelledby="transferModalTitle">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="transferModalTitle">Información para Transferencia</h2>
+            <button class="close-modal" onclick="closeTransferModal()" aria-label="Cerrar modal">×</button>
+        </div>
+        
+        <div class="transfer-info">
+            <div class="bank-info">
+                <h3>Datos Bancarios</h3>
+                <div class="info-item">
+                    <span class="info-label">Banco:</span>
+                    <span class="info-value">BBVA</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cuenta:</span>
+                    <span class="info-value">4152 3134 1234 5678</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">CLABE:</span>
+                    <span class="info-value">012 180 04152313412345678</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Beneficiario:</span>
+                    <span class="info-value">Pastelería Guzmán S.A. de C.V.</span>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <ol>
+                    <li>Realiza la transferencia por el monto total: <strong>$<span id="transferAmount">0</span></strong></li>
+                    <li>Guarda el comprobante de transferencia</li>
+                    <li>Sube el comprobante cuando sea solicitado</li>
+                    <li>Tu pedido será procesado una vez confirmado el pago</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="modal-buttons">
+            <button type="button" class="btn-primary" onclick="confirmTransferPayment()">Confirmar Transferencia</button>
+            <button type="button" class="btn-secondary" onclick="closeTransferModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Información de Envío -->
+<div id="shippingModal" class="modal" aria-hidden="true" aria-labelledby="shippingModalTitle">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="shippingModalTitle">Información de Envío</h2>
+            <button class="close-modal" onclick="closeShippingModal()" aria-label="Cerrar modal">×</button>
+        </div>
+        
+        <form id="shippingForm" onsubmit="return confirmShipping(event)">
+            <div class="form-group">
+                <label for="shippingAddress">Dirección de Envío *</label>
+                <input type="text" id="shippingAddress" placeholder="Calle, número, colonia, ciudad" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="shippingCity">Ciudad *</label>
+                    <input type="text" id="shippingCity" placeholder="Ciudad de México" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="shippingZip">Código Postal *</label>
+                    <input type="text" id="shippingZip" placeholder="12345" pattern="[0-9]{5}" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="shippingPhone">Teléfono de Contacto *</label>
+                <input type="tel" id="shippingPhone" placeholder="5512345678" pattern="[0-9]{10}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="shippingDate">Fecha de Entrega *</label>
+                <input type="date" id="shippingDate" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="shippingNotes">Instrucciones Especiales</label>
+                <textarea id="shippingNotes" placeholder="Ej: Llamar antes de llegar, dejar con el portero, etc." rows="3"></textarea>
+            </div>
+            
+            <div class="shipping-options">
+                <h3>Método de Envío</h3>
+                <div class="shipping-method" onclick="selectShippingMethod('estandar')">
+                    <div class="shipping-info">
+                        <h4>Envío Estándar</h4>
+                        <p>Entrega en 24-48 horas</p>
+                    </div>
+                    <div class="shipping-price">
+                        $50
+                    </div>
+                    <div class="shipping-radio">
+                        <input type="radio" name="shippingMethod" value="estandar" checked>
+                    </div>
+                </div>
+                
+                <div class="shipping-method" onclick="selectShippingMethod('expreso')">
+                    <div class="shipping-info">
+                        <h4>Envío Exprés</h4>
+                        <p>Entrega en el mismo día (3-6 horas)</p>
+                    </div>
+                    <div class="shipping-price">
+                        $100
+                    </div>
+                    <div class="shipping-radio">
+                        <input type="radio" name="shippingMethod" value="expreso">
+                    </div>
+                </div>
+                
+                <div class="shipping-method" onclick="selectShippingMethod('recoger')">
+                    <div class="shipping-info">
+                        <h4>Recoger en Tienda</h4>
+                        <p>Sin costo de envío</p>
+                    </div>
+                    <div class="shipping-price">
+                        $0
+                    </div>
+                    <div class="shipping-radio">
+                        <input type="radio" name="shippingMethod" value="recoger">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button type="submit" class="btn-primary">Confirmar Envío</button>
+                <button type="button" class="btn-secondary" onclick="closeShippingModal()">Regresar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-container">
+            <h1 class="logo" onclick="goHome()" role="button" tabindex="0" aria-label="Pastelería Guzmán - Ir al inicio">
+                🍰 Pastelería Guzmán 🍰
+            </h1>
+            <nav class="main-nav" aria-label="Navegación principal">
+                <ul>
+                    <li><a href="#inicio" onclick="goToSection('inicio')">Inicio</a></li>
+                    <li><a href="#cakes" onclick="goToSection('cakes')">Pasteles</a></li>
+                    <li><a href="#gelatinas" onclick="goToSection('gelatinas')">Gelatinas</a></li>
+                </ul>
+            </nav>
+            <button class="cart-btn" onclick="toggleCart()" aria-label="Abrir carrito de compras">
+                🛒 Carrito <span class="cart-count" id="count" aria-live="polite">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Banner Principal -->
+    <section id="inicio" class="banner" aria-labelledby="bannerTitle">
+        <div class="banner-image">
+            <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff" 
+                 alt="Pastel de chocolate decorado con frutas y crema" 
+                 loading="lazy">
+        </div>
+        <div class="banner-content">
+            <h2 id="bannerTitle">Pasteles hechos con amor ❤️</h2>
+            <p class="banner-subtitle">Endulzamos tus mejores momentos</p>
+            <div class="banner-cta">
+                <button class="btn-primary" onclick="goToSection('cakes')">Ver Pasteles</button>
+                <button class="btn-secondary" onclick="goToSection('gelatinas')">Ver Gelatinas</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Bienvenida -->
+    <section id="home" class="welcome-section" aria-labelledby="welcomeTitle">
+        <div class="container">
+            <h2 id="welcomeTitle">Bienvenidos a Pastelería Guzmán</h2>
+            <p class="welcome-text">
+                Descubre nuestros exquisitos pasteles y gelatinas artesanales, elaborados con los mejores 
+                ingredientes para endulzar tus ocasiones especiales.
+            </p>
+            <div class="welcome-buttons">
+                <button class="btn-primary" onclick="goToSection('cakes')">Explorar Pasteles</button>
+                <button class="btn-secondary" onclick="goToSection('gelatinas')">Ver Gelatinas</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Pasteles -->
+    <main id="cakes" class="products-section" aria-labelledby="cakesTitle">
+        <div class="section-header">
+            <h2 id="cakesTitle">Nuestros Pasteles</h2>
+            <p class="section-subtitle">Deliciosas opciones para todos los gustos</p>
+        </div>
+        <div class="products-grid">
+            <!-- Pastel 1 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1603532648955-039310d9ed75" 
+                         alt="Pastel de chocolate" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel de Chocolate</h3>
+                    <p class="product-description">Delicioso pastel con capas de chocolate </p>
+                    <p class="product-price">$350</p>
+                    <button class="btn-add" onclick="addToCart('Pastel de Chocolate', 350)" 
+                            aria-label="Agregar Pastel de Chocolate al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 2 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1542826438-8b0a6c6d4d45" 
+                         alt="Pastel de Zanahoria" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel con frutos Zanahoria</h3>
+                    <p class="product-description">Clásico pastel bañado con zanahoria</p>
+                    <p class="product-price">$400</p>
+                    <button class="btn-add" onclick="addToCart('Pastel de zanahoria', 400)" 
+                            aria-label="Agregar Pastel de zanahoria">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 3 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1601972599720-4f7c1f15b41d" 
+                         alt="pastel charlotte" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">charlotte</h3>
+                    <p class="product-description">Suave y cremoso charlotte</p>
+                    <p class="product-price">$450</p>
+                    <button class="btn-add" onclick="addToCart('pastel charlotte', 450)" 
+                            aria-label="Agregar pastel charlotte al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 4 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587" 
+                         alt="Pastel de Coco" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel de coco </h3>
+                    <p class="product-description">Exquisito pastel de coco fresco</p>
+                    <p class="product-price">$370</p>
+                    <button class="btn-add" onclick="addToCart('Pastel Red Velvet', 370)" 
+                            aria-label="Agregar Pastel Red Velvet al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 5 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1599785209707-28c43f2c1eaa" 
+                         alt="Pastel de frutas" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel de Frutas</h3>
+                    <p class="product-description">Clásico pastel de frutas</p>
+                    <p class="product-price">$300</p>
+                    <button class="btn-add" onclick="addToCart('Pastel de frutas', 300)" 
+                            aria-label="Agregar Pastel de frutas al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 6 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c" 
+                         alt="Pastel de limon" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel de limon</h3>
+                    <p class="product-description">Pastel de limon exquisito</p>
+                    <p class="product-price">$350</p>
+                    <button class="btn-add" onclick="addToCart('Pastel de Limón', 350)" 
+                            aria-label="Agregar Pastel de limon al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 7 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1605475128023-98d4d6a4e1c6" 
+                         alt="Pastel de galleta Oreo" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel Oreo</h3>
+                    <p class="product-description">Delicioso pastel con galletas Oreo</p>
+                    <p class="product-price">$689</p>
+                    <button class="btn-add" onclick="addToCart('Pastel Oreo', 689)" 
+                            aria-label="Agregar Pastel Oreo al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 8 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1612197527276-9b0b3a7f7c64" 
+                         alt="Pastel de zanahoria con nueces" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel de Zanahoria</h3>
+                    <p class="product-description">Pastel saludable con zanahoria y nueces</p>
+                    <p class="product-price">$659</p>
+                    <button class="btn-add" onclick="addToCart('Pastel de Zanahoria', 659)" 
+                            aria-label="Agregar Pastel de Zanahoria al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 9 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1604908177522-0405f36b8f52" 
+                         alt="Pastel de limón con merengue" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel de Limón</h3>
+                    <p class="product-description">Refrescante pastel con sabor a limón</p>
+                    <p class="product-price">$619</p>
+                    <button class="btn-add" onclick="addToCart('Pastel de Limón', 619)" 
+                            aria-label="Agregar Pastel de Limón al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Pastel 10 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1606787366850-de6330128bfc" 
+                         alt="Pastel de Ferrero Roche" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Pastel de Ferrero Roche</h3>
+                    <p class="product-description">Intenso sabor a chocolate para los amantes del buen gusto</p>
+                    <p class="product-price">$450</p>
+                    <button class="btn-add" onclick="addToCart('Pastel de Ferrero Roche', 450)" 
+                            aria-label="Agregar Pastel de Café al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <!-- Sección de Gelatinas -->
+    <section id="gelatinas" class="products-section" aria-labelledby="gelatinasTitle">
+        <div class="section-header">
+            <h2 id="gelatinasTitle">Nuestras Gelatinas</h2>
+            <p class="section-subtitle">Refrescantes y coloridas gelatinas artesanales</p>
+        </div>
+        <div class="products-grid">
+            <!-- Gelatina 1 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1614707267537-2c4f6f3f2a6b" 
+                         alt="Gelatina de limón transparente" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Limón</h3>
+                    <p class="product-description">Refrescante gelatina con sabor a limón natural</p>
+                    <p class="product-price">$199</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Limón', 199)" 
+                            aria-label="Agregar Gelatina de Limón al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 2 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1589308078054-832ecf6f0f6f" 
+                         alt="Gelatina de fresa roja" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Fresa</h3>
+                    <p class="product-description">Dulce gelatina con sabor a fresa fresca</p>
+                    <p class="product-price">$219</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Fresa', 219)" 
+                            aria-label="Agregar Gelatina de Fresa al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 3 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1599785209707-28c43f2c1eaa" 
+                         alt="Gelatina de mango amarilla" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Mango</h3>
+                    <p class="product-description">Exótica gelatina con sabor a mango tropical</p>
+                    <p class="product-price">$229</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Mango', 229)" 
+                            aria-label="Agregar Gelatina de Mango al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 4 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1604908177522-0405f36b8f52" 
+                         alt="Gelatina de uva morada" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Uva</h3>
+                    <p class="product-description">Deliciosa gelatina con sabor a uva natural</p>
+                    <p class="product-price">$219</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Uva', 219)" 
+                            aria-label="Agregar Gelatina de Uva al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 5 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c" 
+                         alt="Gelatina de piña amarilla" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Piña</h3>
+                    <p class="product-description">Refrescante gelatina con sabor a piña</p>
+                    <p class="product-price">$209</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Piña', 209)" 
+                            aria-label="Agregar Gelatina de Piña al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 6 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1612197527276-9b0b3a7f7c64" 
+                         alt="Gelatina de naranja anaranjada" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Naranja</h3>
+                    <p class="product-description">Vitamínica gelatina con sabor a naranja</p>
+                    <p class="product-price">$199</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Naranja', 199)" 
+                            aria-label="Agregar Gelatina de Naranja al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 7 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587" 
+                         alt="Gelatina de coco blanca" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Coco</h3>
+                    <p class="product-description">Cremosa gelatina con sabor a coco natural</p>
+                    <p class="product-price">$239</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Coco', 239)" 
+                            aria-label="Agregar Gelatina de Coco al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 8 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1605475128023-98d4d6a4e1c6" 
+                         alt="Gelatina de frutos rojos mixta" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Frutos Rojos</h3>
+                    <p class="product-description">Mezcla de frutos rojos en una deliciosa gelatina</p>
+                    <p class="product-price">$249</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Frutos Rojos', 249)" 
+                            aria-label="Agregar Gelatina de Frutos Rojos al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 9 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1603532648955-039310d9ed75" 
+                         alt="Gelatina de durazno anaranjada" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina de Durazno</h3>
+                    <p class="product-description">Suave gelatina con trozos de durazno</p>
+                    <p class="product-price">$229</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina de Durazno', 229)" 
+                            aria-label="Agregar Gelatina de Durazno al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+
+            <!-- Gelatina 10 -->
+            <article class="product-card">
+                <div class="product-image">
+                    <img src="https://images.unsplash.com/photo-1542826438-8b0a6c6d4d45" 
+                         alt="Gelatina arcoíris multicolor" 
+                         loading="lazy">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">Gelatina Arcoíris</h3>
+                    <p class="product-description">Divertida gelatina con capas de colores</p>
+                    <p class="product-price">$259</p>
+                    <button class="btn-add" onclick="addToCart('Gelatina Arcoíris', 259)" 
+                            aria-label="Agregar Gelatina Arcoíris al carrito">
+                        Agregar al carrito
+                    </button>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Carrito de Compras -->
+    <aside id="cart" class="cart-sidebar" aria-hidden="true" aria-label="Carrito de compras">
+        <div class="cart-header">
+            <h2>Mi Carrito</h2>
+            <button class="close-cart" onclick="toggleCart()" aria-label="Cerrar carrito">✖</button>
+        </div>
+        
+        <div class="cart-content">
+            <div id="cartEmpty" class="cart-empty">
+                <p>Tu carrito está vacío</p>
+                <button class="btn-secondary" onclick="goToSection('cakes')">Ver productos</button>
+            </div>
+            
+            <ul id="cartItems" class="cart-items" aria-live="polite"></ul>
+            
+            <div class="cart-summary">
+                <div class="total-section">
+                    <span>Total:</span>
+                    <span class="total-amount">$<span id="total">0</span></span>
+                </div>
+                
+                <button class="btn-checkout" onclick="openCheckout()" disabled>
+                    Proceder al pago
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-icons">
+                <span role="img" aria-label="Pastel">🍰</span>
+                <span role="img" aria-label="Tarta">🎂</span>
+                <span role="img" aria-label="Flan">🍮</span>
+                <span role="img" aria-label="Magdalena">🧁</span>
+            </div>
+            
+            <div class="footer-info">
+                <h3>Pastelería Guzmán</h3>
+                <address>
+                    <p>📍 Dirección: Av. Principal #123, Ciudad de México</p>
+                    <p>📞 Teléfono: <a href="tel:+525512345678">55 1234 5678</a></p>
+                    <p>📧 Email: <a href="mailto:contacto@pasteleriaguzman.com">contacto@pasteleriaguzman.com</a></p>
+                </address>
+                
+                <div class="business-hours">
+                    <h4>Horarios de atención:</h4>
+                    <p>Lunes a Viernes: 8:00 AM - 8:00 PM</p>
+                    <p>Sábados y Domingos: 9:00 AM - 6:00 PM</p>
+                </div>
+            </div>
+            
+            <div class="footer-copyright">
+                <p>&copy; 2024 Pastelería Guzmán. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
